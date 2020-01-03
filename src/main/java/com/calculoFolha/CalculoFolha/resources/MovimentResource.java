@@ -63,16 +63,18 @@ public class MovimentResource {
 	}
 	
 	@PostMapping("/movimentCalculo")
-	public List<Moviment> CalculaFolha(@RequestBody @Valid Moviment moviment) {
+	public String CalculaFolha() {
 		List<Employee> listaEmployee = employeeRepository.findAll();
 		List<Event> listaEvent = eventRepository.findAll();
 		List<Moviment> listaMoviment = movimentRepository.findAll();
-		BigDecimal big1 = new BigDecimal("0.1");
-        BigDecimal big2 = new BigDecimal("0.5");
+		BigDecimal big1 = new BigDecimal("1.1");
+        BigDecimal big2 = new BigDecimal("5.5");
         BigDecimal bigResult = big1.add(big2);
         Date dataSQL = new Date(System.currentTimeMillis());
+        int count = 0;
 		for (Employee employee : listaEmployee) {
 			for (Event event : listaEvent) {
+				Moviment moviment = new Moviment();
 				moviment.setIdEmployee(employee);
 				moviment.setIdEvent(event);
 				moviment.setMonth(dataSQL);
@@ -80,7 +82,14 @@ public class MovimentResource {
 				listaMoviment.add(moviment);
 			}
 		}
-		return listaMoviment;
+		
+		try {
+			listaMoviment.forEach(item -> movimentRepository.save(item));
+			return "Sucesso";
+		} catch (Exception e) {
+			return "Não foi possível executar a ação";
+		}
+		
 		
 	}
 
