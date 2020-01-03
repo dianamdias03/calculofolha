@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.calculoFolha.CalculoFolha.models.Employee;
@@ -62,9 +63,10 @@ public class MovimentResource {
 	}
 	
 	@PostMapping("/movimentCalculo")
-	public void CalculaFolha(@RequestBody @Valid Moviment moviment) {
+	public List<Moviment> CalculaFolha(@RequestBody @Valid Moviment moviment) {
 		List<Employee> listaEmployee = employeeRepository.findAll();
 		List<Event> listaEvent = eventRepository.findAll();
+		List<Moviment> listaMoviment = movimentRepository.findAll();
 		BigDecimal big1 = new BigDecimal("0.1");
         BigDecimal big2 = new BigDecimal("0.5");
         BigDecimal bigResult = big1.add(big2);
@@ -75,9 +77,10 @@ public class MovimentResource {
 				moviment.setIdEvent(event);
 				moviment.setMonth(dataSQL);
 				moviment.setValue(bigResult);
-				movimentRepository.save(moviment);
+				listaMoviment.add(moviment);
 			}
 		}
+		return listaMoviment;
 		
 	}
 
