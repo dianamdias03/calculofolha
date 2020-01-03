@@ -66,7 +66,7 @@ public class MovimentResource {
 		List<Employee> listaEmployee = employeeRepository.findAll();
 		List<Event> listaEvent = eventRepository.findAll();
 		BigDecimal big1 = new BigDecimal("0.1");
-        BigDecimal big2 = new BigDecimal("0.2");
+        BigDecimal big2 = new BigDecimal("0.5");
         BigDecimal bigResult = big1.add(big2);
         Date dataSQL = new Date(System.currentTimeMillis());
 		for (Employee employee : listaEmployee) {
