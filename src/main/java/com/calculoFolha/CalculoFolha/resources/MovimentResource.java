@@ -62,23 +62,50 @@ public class MovimentResource {
 		return movimentRepository.save(moviment);
 	}
 	
-	@PostMapping("/movimentCalculo")
-	public String CalculaFolha() {
+	@PostMapping("/movimentCalculo/{mes}")
+	public String CalculaFolha(@PathVariable(value="mes") int mes) {
 		List<Employee> listaEmployee = employeeRepository.findAll();
 		List<Event> listaEvent = eventRepository.findAll();
 		List<Moviment> listaMoviment = movimentRepository.findAll();
+		System.out.println(mes);
+		System.out.println();
 		BigDecimal big1 = new BigDecimal("1.1");
         BigDecimal big2 = new BigDecimal("5.5");
         BigDecimal bigResult = big1.add(big2);
-        Date dataSQL = new Date(System.currentTimeMillis());
-        int count = 0;
+        Date data = new Date(2020, mes, 01);
 		for (Employee employee : listaEmployee) {
 			for (Event event : listaEvent) {
 				Moviment moviment = new Moviment();
 				moviment.setIdEmployee(employee);
 				moviment.setIdEvent(event);
-				moviment.setMonth(dataSQL);
+				moviment.setMonth(data);
 				moviment.setValue(bigResult);
+				switch ((int)event.getId()) {
+				case 5:
+					System.out.println("Salário");
+					moviment.setValue(employee.getSalary());
+					break;
+				case 6:
+					System.out.println("Hora extra");
+					moviment.setValue(employee.getSalary());
+					break;
+				case 7:
+					System.out.println("Hora falta");
+					moviment.setValue(employee.getSalary());
+					break;
+				case 8:
+					System.out.println("INSS");
+					moviment.setValue(employee.getSalary());
+					break;
+				case 9:
+					System.out.println("FGTS");
+					moviment.setValue(employee.getSalary());
+					break;
+				case 10:
+					System.out.println("IRRF");
+					moviment.setValue(employee.getSalary());
+					break;
+				}
 				listaMoviment.add(moviment);
 			}
 		}
