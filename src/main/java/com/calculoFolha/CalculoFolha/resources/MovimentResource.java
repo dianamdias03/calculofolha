@@ -63,7 +63,17 @@ public class MovimentResource {
 
 	public void calculoInss(Employee employee, Moviment moviment, BigDecimal baseInss) {
 		System.out.println("INSS");
-		BigDecimal aliquota = new BigDecimal("0.07");
+		BigDecimal aliquota;
+		if (baseInss.compareTo(new BigDecimal(1750.81)) < 1) {
+			aliquota = new BigDecimal("0.08");
+		} else if (baseInss.compareTo(new BigDecimal(2919.22)) < 1) {
+			aliquota = new BigDecimal("0.09");
+		} else {
+			aliquota = new BigDecimal("0.11");
+			if(baseInss.compareTo(new BigDecimal(5839.45)) > 0) {
+				baseInss = new BigDecimal(5839.45);
+			}
+		}
 		moviment.setValue(baseInss.multiply(aliquota));
 	}
 
@@ -73,14 +83,18 @@ public class MovimentResource {
 		moviment.setValue(baseInss.multiply(aliquota));
 	}
 
+	public void calculoIrrf(Employee employee, Moviment moviment, BigDecimal baseInss) {
+		System.out.println("IRRF");
+		BigDecimal aliquota = new BigDecimal("0.15");
+		moviment.setValue(baseInss.multiply(aliquota));
+	}
+
 	@PostMapping("/movimentCalculo/{mes}")
 	public String CalculaFolha(@PathVariable(value = "mes") int mes) {
 		List<Employee> listaEmployee = employeeRepository.findAll();
 		List<Event> listaEvent = eventRepository.findAll();
 		List<Moviment> listaMoviment = movimentRepository.findAll();
 		BigDecimal baseInss = new BigDecimal(0);
-		System.out.println(mes);
-		System.out.println();
 		Date data = new Date(2020, mes, 01);
 		for (Employee employee : listaEmployee) {
 			for (Event event : listaEvent) {
@@ -109,20 +123,12 @@ public class MovimentResource {
 					break;
 				case 10:
 					System.out.println("IRRF");
-					moviment.setValue(employee.getSalary());
+					calculoFgts(employee, moviment, baseInss);
 					break;
 				}
 				listaMoviment.add(moviment);
-				if (event.getINSS() == 1) {
-					baseInss = baseInss.add(moviment.getValue())
-				}
-				
-				if (event.getFGTS() == 1) {
-					baseInss = baseInss.add(moviment.getValue());
-				}
-				
-				if (event.getIRRF() == 1) {
-					baseInss = baseInss.add(moviment.getValue());
+				if (event.getTipo() != 3) {
+					moviment.setValue(event.getTipo() == 1 ? baseInss.add(baseInss) : baseInss.subtract(baseInss));
 				}
 			}
 		}
