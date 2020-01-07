@@ -20,13 +20,14 @@ public class Event implements Serializable{
 		
 	}
 	
-	public Event(long id, String name, int INSS, int FGTS, int IRRF, int HEXTRA) {
+	public Event(long id, String name, int INSS, int FGTS, int IRRF, int HEXTRA, int tipo) {
 		this.id = id;
 		this.name = name;
 		this.INSS = INSS;
 		this.FGTS = FGTS;
 		this.IRRF = IRRF;
 		this.HEXTRA = HEXTRA;
+		this.tipo = tipo;
 	}
 	
 	@Id
@@ -49,6 +50,16 @@ public class Event implements Serializable{
 	
 	@NotNull
 	private int HEXTRA;
+	
+	private int tipo; //1 = soma, 2 = diminui, 3 = nada
+
+	public int getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(int tipo) {
+		this.tipo = tipo;
+	}
 
 	public long getId() {
 		return id;
