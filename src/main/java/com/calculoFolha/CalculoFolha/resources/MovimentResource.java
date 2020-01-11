@@ -62,7 +62,6 @@ public class MovimentResource {
 	}
 
 	public void calculoInss(Employee employee, Moviment moviment, BigDecimal baseInss) {
-		System.out.println("INSS");
 		BigDecimal aliquota;
 		if (baseInss.compareTo(new BigDecimal(1750.81)) < 1) {
 			aliquota = new BigDecimal("0.08");
@@ -70,7 +69,7 @@ public class MovimentResource {
 			aliquota = new BigDecimal("0.09");
 		} else {
 			aliquota = new BigDecimal("0.11");
-			if(baseInss.compareTo(new BigDecimal(5839.45)) > 0) {
+			if (baseInss.compareTo(new BigDecimal(5839.45)) > 0) {
 				baseInss = new BigDecimal(5839.45);
 			}
 		}
@@ -78,15 +77,34 @@ public class MovimentResource {
 	}
 
 	public void calculoFgts(Employee employee, Moviment moviment, BigDecimal baseInss) {
-		System.out.println("FGTS");
 		BigDecimal aliquota = new BigDecimal("0.08");
 		moviment.setValue(baseInss.multiply(aliquota));
 	}
 
 	public void calculoIrrf(Employee employee, Moviment moviment, BigDecimal baseInss) {
-		System.out.println("IRRF");
 		BigDecimal aliquota = new BigDecimal("0.15");
 		moviment.setValue(baseInss.multiply(aliquota));
+	}
+
+	public BigDecimal calculaBase(Event event, Moviment moviment, BigDecimal base) {
+		try {
+			if (event.getTipo() != 3) {
+				if (event.getTipo() == 1) {
+					base = base.add(moviment.getValue());
+				} else {
+					BigDecimal valueEvent = moviment.getValue();
+					if (valueEvent != null) {
+						base = base.subtract(valueEvent);
+					} else {
+						System.out.println("O evento " + event.getId() + " está com o valor nulo!");
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("Erro calculando evento! Erro: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return base;
 	}
 
 	@PostMapping("/movimentCalculo/{mes}")
@@ -94,9 +112,11 @@ public class MovimentResource {
 		List<Employee> listaEmployee = employeeRepository.findAll();
 		List<Event> listaEvent = eventRepository.findAll();
 		List<Moviment> listaMoviment = movimentRepository.findAll();
-		BigDecimal baseInss = new BigDecimal(0);
 		Date data = new Date(2020, mes, 01);
 		for (Employee employee : listaEmployee) {
+			BigDecimal baseInss = new BigDecimal(0);
+			BigDecimal baseFgts = new BigDecimal(0);
+			BigDecimal baseIrrf = new BigDecimal(0);
 			for (Event event : listaEvent) {
 				Moviment moviment = new Moviment();
 				moviment.setIdEmployee(employee);
@@ -104,15 +124,12 @@ public class MovimentResource {
 				moviment.setMonth(data);
 				switch ((int) event.getId()) {
 				case 5:
-					System.out.println("Salário");
 					moviment.setValue(employee.getSalary());
 					break;
 				case 6:
-					System.out.println("Hora extra");
 					moviment.setValue(new BigDecimal(200));
 					break;
 				case 7:
-					System.out.println("Hora falta");
 					moviment.setValue(new BigDecimal(60));
 					break;
 				case 8:
@@ -122,14 +139,26 @@ public class MovimentResource {
 					calculoFgts(employee, moviment, baseInss);
 					break;
 				case 10:
-					System.out.println("IRRF");
-					calculoFgts(employee, moviment, baseInss);
+					calculoIrrf(employee, moviment, baseInss);
 					break;
 				}
-				listaMoviment.add(moviment);
-				if (event.getTipo() != 3) {
-					moviment.setValue(event.getTipo() == 1 ? baseInss.add(baseInss) : baseInss.subtract(baseInss));
+
+				if (event.getINSS() == 1) {
+					baseInss = calculaBase(event, moviment, baseInss);
 				}
+				
+				if (event.getIRRF() == 1) {
+					baseIrrf = calculaBase(event, moviment, baseIrrf);
+				}
+				
+				if (event.getFGTS() == 1) {
+					baseFgts = calculaBase(event, moviment, baseFgts);
+				}
+				
+				listaMoviment.add(moviment);
+				System.out.println(employee.getName() + " BaseInss: " + baseInss + "BaseFGTS: " + baseFgts
+						+ "BaseIrrf: " + baseIrrf + " Valor: " + moviment.getValue() + " id:" + event.getId() + " tipo:"
+						+ event.getTipo() + " base inss:" + event.getINSS());
 			}
 		}
 
